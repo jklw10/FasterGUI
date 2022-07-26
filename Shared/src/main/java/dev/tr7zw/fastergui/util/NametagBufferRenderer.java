@@ -47,7 +47,11 @@ public class NametagBufferRenderer {
             new Vector2f(1.0f, 1.0f),
             new Vector2f(0.0f, 1.0f),
         };
-        model = new Model(modelData, uvData);
+        int[] indices = new int[]{
+            0,1,2,
+            1,2,3,
+        };
+        model = new Model(modelData, uvData, indices);
         cleaner.register(this, new ModelCleaner(model));
     }
 
@@ -107,7 +111,8 @@ public class NametagBufferRenderer {
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
-        model.draw(poseStack.last().pose());
+        
+        model.draw(poseStack.last().pose(), light);
         poseStack.popPose();
         FasterGuiModBase.correctBlendMode();
         RenderSystem.enableDepthTest();

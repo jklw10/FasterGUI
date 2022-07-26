@@ -47,7 +47,11 @@ public class BufferRenderer {
             new Vector2f(1.0f, 1.0f),
             new Vector2f(0.0f, 1.0f),
         };
-        model = new Model(modelData, uvData);
+        int[] indices = new int[]{
+            0,1,2,
+            1,2,3,
+        };
+        model = new Model(modelData, uvData, indices);
     }
     
     public void render(CallbackInfo ci) {

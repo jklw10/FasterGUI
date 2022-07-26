@@ -29,6 +29,10 @@ public class SignBufferRenderer {
     private static Model model = null;
     private RenderTarget guiTarget;
     
+    float height = (int)FasterGuiModBase.signSettings.renderHeight;
+    float width = (int)FasterGuiModBase.signSettings.renderWidth;
+
+
     public SignBufferRenderer(SignBlockEntity arg, MultiBufferSource arg3, int light) {
         arg3.getBuffer(RenderType.endGateway()); // force clear the vertex consumer
         guiTarget = new TextureTarget((int)FasterGuiModBase.signSettings.bufferWidth, (int)FasterGuiModBase.signSettings.bufferHeight, false, false);
@@ -46,13 +50,10 @@ public class SignBufferRenderer {
     }
     
     private static void initializeModel(){
-        float height = (int)FasterGuiModBase.signSettings.renderHeight;
-        float width = (int)FasterGuiModBase.signSettings.renderWidth;
-
         Vector3f[] modelData = new Vector3f[]{
-            new Vector3f(0.0f, height, 0.01F),
-            new Vector3f(width, height, 0.01F),
-            new Vector3f(width, 0.0f, 0.01F),
+            new Vector3f(0.0f, 1, 0.01F),
+            new Vector3f(1, 1, 0.01F),
+            new Vector3f(1, 0.0f, 0.01F),
             new Vector3f(0.0f, 0.0f, 0.01F),
         };
         Vector2f[] uvData = new Vector2f[]{
@@ -61,12 +62,17 @@ public class SignBufferRenderer {
             new Vector2f(1.0f, 1.0f),
             new Vector2f(0.0f, 1.0f),
         };
-        model = new Model(modelData, uvData);
+        int[] indices = new int[]{
+            0,1,2,
+            1,2,3,
+        };
+        model = new Model(modelData, uvData, indices);
     }
 
     public void render(PoseStack poseStack, int light) {
         poseStack.pushPose();
         poseStack.translate(FasterGuiModBase.signSettings.offsetX , FasterGuiModBase.signSettings.offsetY, 0);
+        poseStack.scale(width, height, 1);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
