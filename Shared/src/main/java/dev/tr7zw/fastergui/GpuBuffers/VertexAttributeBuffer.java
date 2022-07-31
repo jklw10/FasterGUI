@@ -1,5 +1,6 @@
 package dev.tr7zw.fastergui.GpuBuffers;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -16,6 +17,10 @@ public class VertexAttributeBuffer {
         internalBuffer = new GPUBuffer(GL46.GL_ARRAY_BUFFER, hint, dataType);
         Attribute = attribute;
         DataType = dataType;
+    }
+    public void setData(ByteBuffer data)
+    {
+        internalBuffer.setData(data);
     }
     public void setData(FloatBuffer data)
     {

@@ -10,10 +10,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 
 import dev.tr7zw.fastergui.FasterGuiModBase;
-import dev.tr7zw.fastergui.util.Model.Vector2f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -26,7 +24,7 @@ public class SignBufferRenderer {
 
     private static final Cleaner cleaner = Cleaner.create();
     private static final Minecraft minecraft = Minecraft.getInstance();
-    private static Model model = null;
+    private static Model model = DefaultModel.QUAD;
     private RenderTarget guiTarget;
     
     float height = (int)FasterGuiModBase.signSettings.renderHeight;
@@ -39,8 +37,6 @@ public class SignBufferRenderer {
         guiTarget.setClearColor(0, 0, 0, 0);
         guiTarget.clear(false);
         cleaner.register(this, new State(guiTarget));
-        if(model == null)
-            initializeModel();
     }
     
     public void refreshImage(SignBlockEntity arg, MultiBufferSource arg3, int light) {
@@ -49,29 +45,11 @@ public class SignBufferRenderer {
         renderSignToBuffer(arg, arg3, light);
     }
     
-    private static void initializeModel(){
-        Vector3f[] modelData = new Vector3f[]{
-            new Vector3f(0.0f, 1, 0.01F),
-            new Vector3f(1, 1, 0.01F),
-            new Vector3f(1, 0.0f, 0.01F),
-            new Vector3f(0.0f, 0.0f, 0.01F),
-        };
-        Vector2f[] uvData = new Vector2f[]{
-            new Vector2f(0.0f, 0.0f),
-            new Vector2f(1.0f, 0.0f),
-            new Vector2f(1.0f, 1.0f),
-            new Vector2f(0.0f, 1.0f),
-        };
-        int[] indices = new int[]{
-            0,1,2,
-            1,2,3,
-        };
-        model = new Model(modelData, uvData, indices);
-    }
+    
 
     public void render(PoseStack poseStack, int light) {
         poseStack.pushPose();
-        poseStack.translate(FasterGuiModBase.signSettings.offsetX , FasterGuiModBase.signSettings.offsetY, 0);
+        poseStack.translate(FasterGuiModBase.signSettings.offsetX , FasterGuiModBase.signSettings.offsetY, 0.01f);
         poseStack.scale(width, height, 1);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();

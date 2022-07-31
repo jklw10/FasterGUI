@@ -1,8 +1,12 @@
 package dev.tr7zw.fastergui.GpuBuffers;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
+import org.lwjgl.system.MemoryStack;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -24,7 +28,12 @@ public class ElementBuffer {
         this.vertexCount = vertexCount;
 
         EBO = new GPUBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, GL46.GL_STATIC_DRAW, DataType.UINT);
-        EBO.setData(IntBuffer.wrap(indices).flip()); //why would the flip fix anything :universal_collapse:
+        //EBO.setData(MemoryStack.stackInts(indices)); 
+        //why would the flip fix anything :universal_collapse:
+        //EBO.setData(IntBuffer.wrap(indices).flip()); 
+        //EBO.setData(MemoryStack.stackMalloc(indices.length*4).);
+        
+        EBO.setData(BufferUtils.createIntBuffer(indices.length).put(indices).flip()); 
         this.VBO = VBO;
         unbind();
     }
@@ -43,12 +52,12 @@ public class ElementBuffer {
     }
     public void draw(){
         bind();
-        RenderSystem.drawElements(GlMode, vertexCount, DataType.UINT.GLType);
+        RenderSystem.drawElements(GlMode, indexCount, DataType.UINT.GLType);
         unbind();
     }
     public void draw(int glMode){
         bind();
-        RenderSystem.drawElements(glMode, vertexCount, DataType.UINT.GLType);
+        RenderSystem.drawElements(glMode, indexCount, DataType.UINT.GLType);
         unbind();
     }
 }

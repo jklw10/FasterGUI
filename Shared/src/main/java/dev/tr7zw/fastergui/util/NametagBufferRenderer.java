@@ -9,10 +9,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 
 import dev.tr7zw.fastergui.FasterGuiModBase;
-import dev.tr7zw.fastergui.util.Model.Vector2f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
@@ -26,36 +24,10 @@ public class NametagBufferRenderer {
     private static final Minecraft minecraft = Minecraft.getInstance();
     private RenderTarget renderTargetHidden;
     private RenderTarget renderTargetVisible;
-    private Model model;
+    private static Model model = DefaultModel.QUAD;
     private int textwidth = 0;
-
-    private void initializeModel() {
-        if(model != null) {
-            model.close();
-        }
-        float height = (int)FasterGuiModBase.nametagSettings.renderHeight;
-        
-        Vector3f[] modelData = new Vector3f[]{
-            new Vector3f(0.0f, height, 0.01F),
-            new Vector3f(textwidth, height, 0.01F),
-            new Vector3f(textwidth, 0.0f, 0.01F),
-            new Vector3f(0.0f, 0.0f, 0.01F),
-        };
-        Vector2f[] uvData = new Vector2f[]{
-            new Vector2f(0.0f, 0.0f),
-            new Vector2f(1.0f, 0.0f),
-            new Vector2f(1.0f, 1.0f),
-            new Vector2f(0.0f, 1.0f),
-        };
-        int[] indices = new int[]{
-            0,1,2,
-            1,2,3,
-        };
-        model = new Model(modelData, uvData, indices);
-        cleaner.register(this, new ModelCleaner(model));
-    }
-
-    
+    float height = (int)FasterGuiModBase.nametagSettings.renderHeight;
+       
     public void refreshImage(Component text, MultiBufferSource arg3, int light) {
         textwidth = minecraft.font.width(text);
         if(textwidth <= 0) { // fail save and quickly
@@ -73,12 +45,10 @@ public class NametagBufferRenderer {
         if(renderTargetHidden == null) {
             renderTargetHidden = setupTexture(width, height);
             renderTargetVisible = setupTexture(width, height);
-            initializeModel();
         }
         if(renderTargetHidden.width != width || renderTargetHidden.height != height) {
             renderTargetHidden.resize(width, height, false);
             renderTargetVisible.resize(width, height, false);
-            initializeModel();
         }
 
         renderTargetHidden.clear(false);
@@ -101,6 +71,7 @@ public class NametagBufferRenderer {
         RenderTarget renderTarget = hidden ? renderTargetHidden : renderTargetVisible;
         poseStack.pushPose();
         poseStack.translate(-textwidth/2f, 0, 0);
+        poseStack.scale(height, textwidth, 1);
         RenderSystem.enableBlend();
         FasterGuiModBase.correctBlendMode();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -164,20 +135,4 @@ public class NametagBufferRenderer {
             });
         }
     }
-    
-    static class ModelCleaner implements Runnable {
-
-        private Model cleanableModel;
-        
-        ModelCleaner(Model model) {
-            this.cleanableModel = model;
-        }
-
-        public void run() {
-            RenderSystem.recordRenderCall(() -> {
-                cleanableModel.close();
-            });
-        }
-    }
-    
 }

@@ -17,7 +17,9 @@
     "SignBlockEntityMixin",
     "EntityRendererMixin",
     "EntityMixin",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "DebugCallbackMixin",
+    "VertexBufferMixin"
   ],
   "injectors": {
     "defaultRequire": 1

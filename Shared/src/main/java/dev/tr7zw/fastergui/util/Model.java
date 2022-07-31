@@ -1,11 +1,9 @@
 package dev.tr7zw.fastergui.util;
 
-import java.nio.ShortBuffer;
-
+import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL46;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 
@@ -23,69 +21,56 @@ public class Model {
     VertexAttributeBuffer positions;
     VertexAttributeBuffer UVs;
     VertexAttributeBuffer lighting;
-    ShortBuffer Lights;
+    ByteBuffer Lights;
     public Model(Vector3f[] modelData, Vector2f[] uvData, int[] indices){
         GlMode = GL46.GL_TRIANGLES;
         vertexCount = modelData.length;
         indexCount = indices.length;
         
-        Lights = ShortBuffer.allocate(vertexCount*2);
-
-        RenderUtil.EnsureRenderThread(() -> {
-            MakeEBO(modelData, uvData, indices);
-        });
+        Lights = GPUBuffer.byteBufferFromDataType(vertexCount,DataType.SHORT2);
+        MakeEBO(modelData, uvData, indices);
     }
     
     private void MakeEBO(Vector3f[] modelData, Vector2f[] uvData, int[] indices){
         positions = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 0, DataType.FLOAT3);
-        UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 3, DataType.FLOAT2);
+        UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 1, DataType.FLOAT2);
+        //yeah uhh... mmm make the shader stuff better ?
         lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2);
         
         toDraw = new ElementBuffer(indices, new VertexAttributeBuffer[]{positions,UVs,lighting}, vertexCount, GlMode);
-        toDraw.bind();
-        positions.setData(GPUBuffer.vecToFloatBuffer(modelData));
-        UVs.setData(GPUBuffer.vecToFloatBuffer(uvData));
-        toDraw.unbind();
+        
+        positions.setData(GPUBuffer.vecToByteBuffer(modelData));
+        UVs.setData(GPUBuffer.vecToByteBuffer(uvData));
+        lighting.setData(Lights);
     }
     
-    int logs = 0;
     public void drawWithShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance) {
-        if(logs <= 40){
-            Thread.dumpStack();
-            logs++;
-        }else{
-            System.exit(1);
-        }
-        RenderUtil.EnsureRenderThread(() -> {
-            shaderInstance.apply();
-            UpdateShader(modelViewMat, projMat, shaderInstance);
-            toDraw.draw();
-            shaderInstance.clear();
-        });
+        shaderInstance.apply();
+        UpdateShader(modelViewMat, projMat, shaderInstance);
+        toDraw.draw();
+        shaderInstance.clear();
     }
 
-    public void draw(Matrix4f matrix4f) {
-        drawWithShader(matrix4f, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+    public void draw(Matrix4f modelViewMat) {
+        drawWithShader(modelViewMat, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
     }
-    public void draw(Matrix4f matrix4f, int light) {
+    public void draw(Matrix4f modelViewMat, int light) {
         updateLight(light);
-        drawWithShader(matrix4f, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-    }
+        draw(modelViewMat);
+   }
     int curlight = 0;
-    //only slightly cursed
+    //only a small hint of a curse can be found here
     public void updateLight(int light){
         if(curlight == light) return;
         curlight = light;
         Lights.clear();
         for(int i = 0; i < vertexCount; i++) {
-            Lights.put((short)(light & '\uffff'));
-            Lights.put((short)(light >> 16 & '\uffff'));
+            Lights.putShort((short)(light & '\uffff'));
+            Lights.putShort((short)(light >> 16 & '\uffff'));
         }
-        RenderUtil.EnsureRenderThread(() -> {
-            toDraw.bind();
-            lighting.setData(Lights);
-            toDraw.unbind();
-        });
+        Lights.flip(); //i can only blame java for this...
+        
+        lighting.setData(Lights);
     }
 
     public void UpdateShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance){

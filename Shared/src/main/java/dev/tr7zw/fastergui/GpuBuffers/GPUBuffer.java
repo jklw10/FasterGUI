@@ -1,9 +1,11 @@
 package dev.tr7zw.fastergui.GpuBuffers;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 
 import com.mojang.math.Vector3f;
@@ -21,12 +23,28 @@ public class GPUBuffer{
         bufferUsageHint = hint;
         Type = type;
     }
+    
     public void setData(FloatBuffer data)
     {
         Use();
         GL46.glBufferData(bufferTarget, data, bufferUsageHint);
     }
     public void SubData(int start, FloatBuffer data)
+    {
+        Use();
+        GL46.glBufferSubData(bufferTarget, start, data);
+    }
+    public void setData(ByteBuffer data)
+    {
+        Use();
+        System.out.println("data size:" +data.capacity());
+        //GL46.glBufferData(bufferTarget, data.capacity(), bufferUsageHint);
+        //SubData(0, data);
+        
+        GL46.glBufferData(bufferTarget, data, bufferUsageHint);
+        
+    }
+    public void SubData(int start, ByteBuffer data)
     {
         Use();
         GL46.glBufferSubData(bufferTarget, start, data);
@@ -45,42 +63,57 @@ public class GPUBuffer{
     {
         Use();
         GL46.glBufferData(bufferTarget, data, bufferUsageHint);
+        
     }
     public void SubData(int start, IntBuffer data)
     {
         Use();
         GL46.glBufferSubData(bufferTarget, start, data);
     }
-    int logs = 0;
     public void Use() 
     {
-        if(logs <= 40){
-            Thread.dumpStack();
-            logs++;
-        }else{
-            System.exit(1);
-        }
-        
         GL46.glBindBuffer(bufferTarget, Handle);
     }
     public void delete(){
         GL46.glDeleteBuffers(Handle);
     }
     public static FloatBuffer vecToFloatBuffer(Vector2f[] array){
-        FloatBuffer floats = FloatBuffer.allocate(array.length*2);
+        FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*2);
         for (var vec : array) {
             floats.put(vec.x());
             floats.put(vec.y()); 
         }
-        return floats;
+        return floats.flip();
     }
     public static FloatBuffer vecToFloatBuffer(Vector3f[] array){
-        FloatBuffer floats = FloatBuffer.allocate(array.length*3);
+        FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*3);
         for (var vec : array) {
             floats.put(vec.x());
             floats.put(vec.y()); 
             floats.put(vec.z()); 
         }
-        return floats;
+        return floats.flip();
+    }
+    public static ByteBuffer vecToByteBuffer(Vector3f[] array){
+        var dt = DataType.FLOAT3;
+        ByteBuffer floats = byteBufferFromDataType(array.length,dt);
+        for (var vec : array) {
+            floats.putFloat(vec.x());
+            floats.putFloat(vec.y()); 
+            floats.putFloat(vec.z()); 
+        }
+        return floats.flip();
+    }
+    public static ByteBuffer vecToByteBuffer(Vector2f[] array){
+        var dt = DataType.FLOAT2;
+        ByteBuffer floats = byteBufferFromDataType(array.length,dt);
+        for (var vec : array) {
+            floats.putFloat(vec.x());
+            floats.putFloat(vec.y()); 
+        }
+        return floats.flip();
+    }
+    public static ByteBuffer byteBufferFromDataType(int length,DataType dt){
+        return BufferUtils.createByteBuffer(length*dt.Dimensions*dt.Size);
     }
 }
