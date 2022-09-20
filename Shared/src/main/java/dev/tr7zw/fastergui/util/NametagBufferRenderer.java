@@ -11,6 +11,7 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 
 import dev.tr7zw.fastergui.FasterGuiModBase;
+import dev.tr7zw.fastergui.gpuBuffers.VertexDataFormat.LightComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
@@ -82,8 +83,8 @@ public class NametagBufferRenderer {
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
-        
-        model.draw(poseStack.last().pose(), light);
+        model.setFirstComponent(new LightComponent(light));
+        model.draw(poseStack.last().pose());
         poseStack.popPose();
         FasterGuiModBase.correctBlendMode();
         RenderSystem.enableDepthTest();

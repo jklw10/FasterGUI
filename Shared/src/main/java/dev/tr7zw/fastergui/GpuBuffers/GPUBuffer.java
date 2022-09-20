@@ -1,9 +1,7 @@
-package dev.tr7zw.fastergui.GpuBuffers;
+package dev.tr7zw.fastergui.gpuBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
@@ -16,61 +14,28 @@ public class GPUBuffer{
     final int Handle;
     final int bufferTarget;
     final int bufferUsageHint;
-    final DataType Type;
-    public GPUBuffer(int target, int hint, DataType type){
+    public GPUBuffer(int target, int hint){
         Handle = GL46.glGenBuffers();
         bufferTarget = target;
         bufferUsageHint = hint;
-        Type = type;
     }
-    
-    public void setData(FloatBuffer data)
+    public void setData(int[] data)
     {
-        Use();
-        GL46.glBufferData(bufferTarget, data, bufferUsageHint);
-    }
-    public void SubData(int start, FloatBuffer data)
-    {
-        Use();
-        GL46.glBufferSubData(bufferTarget, start, data);
+        bind();
+        var buf = BufferUtils.createIntBuffer(data.length).put(data).flip();
+        GL46.glBufferData(bufferTarget, buf, bufferUsageHint);
     }
     public void setData(ByteBuffer data)
     {
-        Use();
-        System.out.println("data size:" +data.capacity());
-        //GL46.glBufferData(bufferTarget, data.capacity(), bufferUsageHint);
-        //SubData(0, data);
-        
-        GL46.glBufferData(bufferTarget, data, bufferUsageHint);
-        
-    }
-    public void SubData(int start, ByteBuffer data)
-    {
-        Use();
-        GL46.glBufferSubData(bufferTarget, start, data);
-    }
-    public void setData(ShortBuffer data)
-    {
-        Use();
+        bind();
         GL46.glBufferData(bufferTarget, data, bufferUsageHint);
     }
-    public void SubData(int start, ShortBuffer data)
+    public void subData(int start, ByteBuffer data)
     {
-        Use();
+        bind();
         GL46.glBufferSubData(bufferTarget, start, data);
     }
-    public void setData(IntBuffer data)
-    {
-        Use();
-        GL46.glBufferData(bufferTarget, data, bufferUsageHint);
-        
-    }
-    public void SubData(int start, IntBuffer data)
-    {
-        Use();
-        GL46.glBufferSubData(bufferTarget, start, data);
-    }
-    public void Use() 
+    public void bind() 
     {
         GL46.glBindBuffer(bufferTarget, Handle);
     }

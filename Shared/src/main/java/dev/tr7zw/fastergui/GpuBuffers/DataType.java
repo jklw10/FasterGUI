@@ -1,4 +1,4 @@
-package dev.tr7zw.fastergui.GpuBuffers;
+package dev.tr7zw.fastergui.gpuBuffers;
 
 import org.lwjgl.opengl.GL46;
 

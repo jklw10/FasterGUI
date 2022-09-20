@@ -1,132 +1,148 @@
 package dev.tr7zw.fastergui.util;
 
-import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL46;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 
-import dev.tr7zw.fastergui.GpuBuffers.DataType;
-import dev.tr7zw.fastergui.GpuBuffers.ElementBuffer;
-import dev.tr7zw.fastergui.GpuBuffers.GPUBuffer;
-import dev.tr7zw.fastergui.GpuBuffers.VertexAttributeBuffer;
+import dev.tr7zw.fastergui.gpuBuffers.DataType;
+import dev.tr7zw.fastergui.gpuBuffers.ElementBuffer;
+import dev.tr7zw.fastergui.gpuBuffers.VertexArrays;
+import dev.tr7zw.fastergui.gpuBuffers.VertexAttributeBuffer;
+import dev.tr7zw.fastergui.gpuBuffers.VertexDataFormat;
+import dev.tr7zw.fastergui.ecs.Entity;
+import dev.tr7zw.fastergui.ecs.GPUEntityComponentContainer;
+import dev.tr7zw.fastergui.ecs.IComponent;
 import net.minecraft.client.renderer.ShaderInstance;
 
 public class Model {
-    ElementBuffer toDraw;
-    int vertexCount;
-    int indexCount;
-    int GlMode;
-    VertexAttributeBuffer positions;
-    VertexAttributeBuffer UVs;
-    VertexAttributeBuffer lighting;
-    ByteBuffer Lights;
-    public Model(Vector3f[] modelData, Vector2f[] uvData, int[] indices){
-        GlMode = GL46.GL_TRIANGLES;
-        vertexCount = modelData.length;
-        indexCount = indices.length;
-        
-        Lights = GPUBuffer.byteBufferFromDataType(vertexCount,DataType.SHORT2);
-        MakeEBO(modelData, uvData, indices);
-    }
-    
-    private void MakeEBO(Vector3f[] modelData, Vector2f[] uvData, int[] indices){
-        positions = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 0, DataType.FLOAT3);
-        UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 1, DataType.FLOAT2);
-        //yeah uhh... mmm make the shader stuff better ?
-        lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2);
-        
-        toDraw = new ElementBuffer(indices, new VertexAttributeBuffer[]{positions,UVs,lighting}, vertexCount, GlMode);
-        
-        positions.setData(GPUBuffer.vecToByteBuffer(modelData));
-        UVs.setData(GPUBuffer.vecToByteBuffer(uvData));
-        lighting.setData(Lights);
-    }
-    
-    public void drawWithShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance) {
-        shaderInstance.apply();
-        UpdateShader(modelViewMat, projMat, shaderInstance);
-        toDraw.draw();
-        shaderInstance.clear();
-    }
+   VertexArrays vao = new VertexArrays();
+   ElementBuffer toDraw;
+   ShaderInstance shader;
+   GPUEntityComponentContainer componentContainer;
+   int vertexCount;
+   public Model(GPUEntityComponentContainer container, ShaderInstance shader, VertexDataFormat dataFormat, IComponent[] components){
+      //positions = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 0, DataType.FLOAT3);
+      //UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 1, DataType.FLOAT2);
+      //yeah uhh... mmm make the shader stuff better ?
+      //lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2,1);
 
-    public void draw(Matrix4f modelViewMat) {
-        drawWithShader(modelViewMat, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-    }
-    public void draw(Matrix4f modelViewMat, int light) {
-        updateLight(light);
-        draw(modelViewMat);
+      componentContainer = container;
+      vao.bind();
+      componentContainer.createEntity(components);
+      dataFormat.enable(componentContainer);
+      toDraw = new ElementBuffer();
    }
-    int curlight = 0;
-    //only a small hint of a curse can be found here
-    public void updateLight(int light){
-        if(curlight == light) return;
-        curlight = light;
-        Lights.clear();
-        for(int i = 0; i < vertexCount; i++) {
-            Lights.putShort((short)(light & '\uffff'));
-            Lights.putShort((short)(light >> 16 & '\uffff'));
-        }
-        Lights.flip(); //i can only blame java for this...
-        
-        lighting.setData(Lights);
-    }
+   public Model(ShaderInstance shader, VertexDataFormat dataFormat, IComponent[] components){
+      //positions = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 0, DataType.FLOAT3);
+      //UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 1, DataType.FLOAT2);
+      //yeah uhh... mmm make the shader stuff better ?
+      //lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2,1);
 
-    public void UpdateShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance){
-        for(int i = 0; i < 12; ++i) {
-            int j = RenderSystem.getShaderTexture(i);
-            shaderInstance.setSampler("Sampler" + i, j);
-         }
-         //why are 90% of these not updated in the ShaderInstance or RenderSystem?... mojank plz?
-         
-         if (shaderInstance.MODEL_VIEW_MATRIX != null) {
-            shaderInstance.MODEL_VIEW_MATRIX.set(modelViewMat);
-         }
+      vao.bind();
+      componentContainer = new GPUEntityComponentContainer();
+      componentContainer.createEntity(components);
+      dataFormat.enable(componentContainer);
+      toDraw = new ElementBuffer();
+   }
    
-         if (shaderInstance.PROJECTION_MATRIX != null) {
-            shaderInstance.PROJECTION_MATRIX.set(projMat);
-         }
+   public void setComponent(int id, IComponent component){
+      componentContainer.setComponent(id, component);
+   }
+   public void setFirstComponent(IComponent component){
+      componentContainer.setComponent(0,component);
+   }
+   public void update(Entity... data){
+      vao.bind();
+   }
    
-         if (shaderInstance.INVERSE_VIEW_ROTATION_MATRIX != null) {
-            shaderInstance.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
-         }
+
+   public void drawInstanced(int count){
+      bind();
+      shader.apply();
+      GL46.nglDrawElementsInstanced(GL46.GL_TRIANGLES, vertexCount, 0, DataType.UINT.GLType, count);
+      unbind();
+   }
+   public void bind(){
+      vao.bind();
+   }
+   public static void unbind(){
+      VertexArrays.unbind();
+   }
+   public void drawWithShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance) {
+      shaderInstance.apply();
+      UpdateShader(modelViewMat, projMat, shaderInstance);
+      bind();
+      RenderSystem.drawElements(GL46.GL_TRIANGLES, vertexCount, DataType.UINT.GLType);
+      unbind();
+      shaderInstance.clear();
+   }
+   public void draw(Matrix4f modelViewMat, Matrix4f proj) {
+      drawWithShader(modelViewMat, proj, shader);
+   }
+   public void draw(Matrix4f modelViewMat) {
+      draw(modelViewMat, RenderSystem.getProjectionMatrix());
+   }
    
-         if (shaderInstance.COLOR_MODULATOR != null) {
-            shaderInstance.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-         }
    
-         if (shaderInstance.FOG_START != null) {
-            shaderInstance.FOG_START.set(RenderSystem.getShaderFogStart());
-         }
    
-         if (shaderInstance.FOG_END != null) {
-            shaderInstance.FOG_END.set(RenderSystem.getShaderFogEnd());
-         }
+   int curlight = 0;
    
-         if (shaderInstance.FOG_COLOR != null) {
-            shaderInstance.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-         }
+
+   public void UpdateShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance){
+      for(int i = 0; i < 12; ++i) {
+         int j = RenderSystem.getShaderTexture(i);
+         shaderInstance.setSampler("Sampler" + i, j);
+      }
+      //why are 90% of these not updated in the ShaderInstance or RenderSystem?... mojank plz?
+      
+      if (shaderInstance.MODEL_VIEW_MATRIX != null) {
+         shaderInstance.MODEL_VIEW_MATRIX.set(modelViewMat);
+      }
+
+      if (shaderInstance.PROJECTION_MATRIX != null) {
+         shaderInstance.PROJECTION_MATRIX.set(projMat);
+      }
+
+      if (shaderInstance.INVERSE_VIEW_ROTATION_MATRIX != null) {
+         shaderInstance.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
+      }
+
+      if (shaderInstance.COLOR_MODULATOR != null) {
+         shaderInstance.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+      }
+
+      if (shaderInstance.FOG_START != null) {
+         shaderInstance.FOG_START.set(RenderSystem.getShaderFogStart());
+      }
+
+      if (shaderInstance.FOG_END != null) {
+         shaderInstance.FOG_END.set(RenderSystem.getShaderFogEnd());
+      }
+
+      if (shaderInstance.FOG_COLOR != null) {
+         shaderInstance.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+      }
+
+      if (shaderInstance.FOG_SHAPE != null) {
+         shaderInstance.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+      }
+
+      if (shaderInstance.TEXTURE_MATRIX != null) {
+         shaderInstance.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+      }
+
+      if (shaderInstance.GAME_TIME != null) {
+         shaderInstance.GAME_TIME.set(RenderSystem.getShaderGameTime());
+      }
+      // and why is this but not the others?
+      RenderSystem.setupShaderLights(shaderInstance);
+   }
    
-         if (shaderInstance.FOG_SHAPE != null) {
-            shaderInstance.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-         }
+   public void close() {
+       toDraw.delete();
+   }
    
-         if (shaderInstance.TEXTURE_MATRIX != null) {
-            shaderInstance.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-         }
-   
-         if (shaderInstance.GAME_TIME != null) {
-            shaderInstance.GAME_TIME.set(RenderSystem.getShaderGameTime());
-         }
-         // and why is this but not the others?
-         RenderSystem.setupShaderLights(shaderInstance);
-    }
-    
-    public void close() {
-        toDraw.delete();
-    }
-    
-    public record Vector2f(float x, float y)  {}
+   public record Vector2f(float x, float y)  {}
 
 }

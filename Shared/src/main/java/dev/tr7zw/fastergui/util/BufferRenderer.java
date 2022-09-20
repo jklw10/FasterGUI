@@ -81,9 +81,12 @@ public class BufferRenderer {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, textureid);
-        Matrix4f fullscreen = Matrix4f.createScaleMatrix(2, 2, 0);
-        fullscreen.multiply(Matrix4f.createTranslateMatrix(-1, -1, 0.01f));
-        model.draw(fullscreen);
+        Matrix4f fullscreen = new Matrix4f();
+        fullscreen.setIdentity();
+        Matrix4f proj = fullscreen.copy();
+        fullscreen.multiply(Matrix4f.createScaleMatrix(2, 2, 0));
+        fullscreen.multiply(Matrix4f.createTranslateMatrix(-1, -1, -0.01f));
+        model.draw(fullscreen, proj);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
