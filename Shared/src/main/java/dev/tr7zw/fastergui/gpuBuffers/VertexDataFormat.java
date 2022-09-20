@@ -60,7 +60,7 @@ public class VertexDataFormat {
         }
     }
 
-    public record VertexAttribute(int location, DataType dataType, int divisor, int componentType)  {}
+    public record VertexAttribute(int location, DataType dataType, int divisor)  {}
 
     public final VertexAttribute[] vertexData;
     public VertexDataFormat(VertexAttribute... data){
@@ -79,7 +79,7 @@ public class VertexDataFormat {
         }
     }
     public void enable(GPUEntityComponentContainer buffers){
-        enable(buffers.getBuffers());
+        enable(buffers.getAllBuffers());
     }
     public static void enable(VertexAttribute attribute){
         GL46.glEnableVertexAttribArray(attribute.location);

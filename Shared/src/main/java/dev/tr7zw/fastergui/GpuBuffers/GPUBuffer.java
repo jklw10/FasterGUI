@@ -78,6 +78,12 @@ public class GPUBuffer{
         }
         return floats.flip();
     }
+    public static ByteBuffer intToByteBuffer(int[] array){
+        var dt = DataType.INT;
+        ByteBuffer values = byteBufferFromDataType(array.length,dt);
+        values.asIntBuffer().put(array);
+        return values.flip();
+    }
     public static ByteBuffer byteBufferFromDataType(int length,DataType dt){
         return BufferUtils.createByteBuffer(length*dt.Dimensions*dt.Size);
     }
