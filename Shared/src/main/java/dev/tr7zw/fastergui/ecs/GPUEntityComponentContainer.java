@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL46;
 import dev.tr7zw.fastergui.gpuBuffers.GPUBuffer;
 
 public class GPUEntityComponentContainer {
+    //TODO expandable gpu buffer
     private final Map<Class<?>, GPUBuffer> buffers = new HashMap<>();
     
     public int createEntity(IComponent[] entitydata)
@@ -29,6 +30,13 @@ public class GPUEntityComponentContainer {
             return;
         }
         buf.subData(id*component.getStride(),component.asBuffer());
+    }
+    public void setEntity(int id, IComponent[] entitydata)
+    {
+        for(var component : entitydata)
+        {
+            setComponent(id, component);
+        }
     }
     public GPUBuffer getComponentBuffer(IComponent component)
     {

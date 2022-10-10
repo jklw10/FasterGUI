@@ -5,5 +5,4 @@ import java.nio.ByteBuffer;
 public interface IComponent {
     public ByteBuffer asBuffer();
     public int getStride();
-    public int getIdentifier(int selector);
 }

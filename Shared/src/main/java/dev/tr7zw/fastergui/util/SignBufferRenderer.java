@@ -24,7 +24,7 @@ public class SignBufferRenderer {
 
     private static final Cleaner cleaner = Cleaner.create();
     private static final Minecraft minecraft = Minecraft.getInstance();
-    private static Model model = DefaultModel.QUAD;
+    //private Model model = DefaultModel.getQuadModel();
     private RenderTarget guiTarget;
     
     float height = (int)FasterGuiModBase.signSettings.renderHeight;
@@ -61,7 +61,7 @@ public class SignBufferRenderer {
 
         Matrix4f pose = poseStack.last().pose();
         
-        model.draw(pose); // TODO: is light required here, since it's baked into the texture?
+        DefaultModel.getQuadModel().draw(pose); // TODO: is light required here, since it's baked into the texture?
 
         poseStack.popPose();
     }

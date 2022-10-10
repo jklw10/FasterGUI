@@ -7,13 +7,13 @@ import dev.tr7zw.fastergui.gpuBuffers.VertexDataFormat.VertexAttribute;
 public class VertexAttributeBuffer {
     GPUBuffer internalBuffer;
     VertexAttribute attribute;
-    public VertexAttributeBuffer(int hint, int attribute, DataType dataType, int componentType){
+    public VertexAttributeBuffer(int hint, int attribute, DataType dataType){
         internalBuffer = new GPUBuffer(GL46.GL_ARRAY_BUFFER, hint);
-        this.attribute = new VertexAttribute(attribute, dataType, 0,componentType);
+        this.attribute = new VertexAttribute(attribute, dataType, 0);
     }
-    public VertexAttributeBuffer(int hint, int attribute, DataType dataType, int divisor, int componentType){
+    public VertexAttributeBuffer(int hint, int attribute, DataType dataType, int divisor){
         internalBuffer = new GPUBuffer(GL46.GL_ARRAY_BUFFER, hint);
-        this.attribute = new VertexAttribute(attribute, dataType, divisor, componentType);
+        this.attribute = new VertexAttribute(attribute, dataType, divisor);
     }
     public VertexAttributeBuffer(int hint, VertexAttribute attribute){
         internalBuffer = new GPUBuffer(GL46.GL_ARRAY_BUFFER, hint);

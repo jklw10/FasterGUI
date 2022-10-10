@@ -25,7 +25,7 @@ public class NametagBufferRenderer {
     private static final Minecraft minecraft = Minecraft.getInstance();
     private RenderTarget renderTargetHidden;
     private RenderTarget renderTargetVisible;
-    private static Model model = DefaultModel.QUAD;
+    //private Model model = DefaultModel.getQuadModel();
     private int textwidth = 0;
     float height = (int)FasterGuiModBase.nametagSettings.renderHeight;
        
@@ -83,8 +83,8 @@ public class NametagBufferRenderer {
         }
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
-        model.setFirstComponent(new LightComponent(light));
-        model.draw(poseStack.last().pose());
+        DefaultModel.getQuadModel().setFirstComponent(new LightComponent(light));
+        DefaultModel.getQuadModel().draw(poseStack.last().pose());
         poseStack.popPose();
         FasterGuiModBase.correctBlendMode();
         RenderSystem.enableDepthTest();

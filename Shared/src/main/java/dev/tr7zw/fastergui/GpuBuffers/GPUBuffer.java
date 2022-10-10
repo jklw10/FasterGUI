@@ -2,8 +2,10 @@ package dev.tr7zw.fastergui.gpuBuffers;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 
 import com.mojang.math.Vector3f;
@@ -37,7 +39,14 @@ public class GPUBuffer{
     }
     public void bind() 
     {
+        System.out.println("bound buffer target:"+bufferTarget);
+      
         GL46.glBindBuffer(bufferTarget, Handle);
+        if(bufferTarget == GL46.GL_ELEMENT_ARRAY_BUFFER){
+            int[] array = new int[6];
+            GL46.glGetBufferSubData(GL46.GL_ELEMENT_ARRAY_BUFFER, 0, array);
+            System.out.println(Arrays.toString(array));
+        }
     }
     public void delete(){
         GL46.glDeleteBuffers(Handle);

@@ -82,6 +82,7 @@ public class VertexDataFormat {
         enable(buffers.getAllBuffers());
     }
     public static void enable(VertexAttribute attribute){
+        if(attribute.location < 0) return;
         GL46.glEnableVertexAttribArray(attribute.location);
         GL46.glVertexAttribPointer(attribute.location, attribute.dataType.Dimensions, attribute.dataType.GLType, false, 0, 0);
         GL46.glVertexAttribDivisor(attribute.location, attribute.divisor);

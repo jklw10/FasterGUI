@@ -15,6 +15,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.tr7zw.config.CustomConfigScreen;
 import dev.tr7zw.fastergui.util.BufferRenderer;
+import dev.tr7zw.fastergui.util.DefaultModel;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -34,6 +35,7 @@ public abstract class FasterGuiModBase {
 
     public void onInitialize() {
 		instance = this;
+
         if (settingsFile.exists()) {
             try {
                 config = gson.fromJson(new String(Files.readAllBytes(settingsFile.toPath()), StandardCharsets.UTF_8),

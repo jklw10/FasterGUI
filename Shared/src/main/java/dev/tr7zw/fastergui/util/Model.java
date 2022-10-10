@@ -10,6 +10,7 @@ import dev.tr7zw.fastergui.gpuBuffers.ElementBuffer;
 import dev.tr7zw.fastergui.gpuBuffers.VertexArrays;
 import dev.tr7zw.fastergui.gpuBuffers.VertexAttributeBuffer;
 import dev.tr7zw.fastergui.gpuBuffers.VertexDataFormat;
+import dev.tr7zw.fastergui.gpuBuffers.VertexDataFormat.IndexDataComponent;
 import dev.tr7zw.fastergui.ecs.Entity;
 import dev.tr7zw.fastergui.ecs.GPUEntityComponentContainer;
 import dev.tr7zw.fastergui.ecs.IComponent;
@@ -28,22 +29,28 @@ public class Model {
       //lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2,1);
 
       componentContainer = container;
-      vao.bind();
+      bind();
       componentContainer.createEntity(components);
       dataFormat.enable(componentContainer);
-      toDraw = new ElementBuffer();
+      toDraw = fromComponent(components[0]);
+      unbind();
    }
    public Model(ShaderInstance shader, VertexDataFormat dataFormat, IComponent[] components){
-      //positions = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 0, DataType.FLOAT3);
-      //UVs = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 1, DataType.FLOAT2);
-      //yeah uhh... mmm make the shader stuff better ?
-      //lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2,1);
-
-      vao.bind();
+      
+      bind();
       componentContainer = new GPUEntityComponentContainer();
       componentContainer.createEntity(components);
       dataFormat.enable(componentContainer);
-      toDraw = new ElementBuffer();
+      toDraw = fromComponent(components[0]);
+      unbind();
+   }
+   public ElementBuffer fromComponent(IComponent component){
+      ElementBuffer eb = new ElementBuffer();
+      eb.setData(((IndexDataComponent)component).positions());
+      return eb;
+   }
+   public Model instance(){
+      return null; //todo make cloning :/
    }
    
    public void setComponent(int id, IComponent component){
@@ -53,32 +60,33 @@ public class Model {
       componentContainer.setComponent(0,component);
    }
    public void update(Entity... data){
-      vao.bind();
+      //vao.bind();
    }
    
 
    public void drawInstanced(int count){
       bind();
       shader.apply();
-      GL46.nglDrawElementsInstanced(GL46.GL_TRIANGLES, vertexCount, 0, DataType.UINT.GLType, count);
+      GL46.nglDrawElementsInstanced(GL46.GL_TRIANGLES, toDraw.indexCount, 0, DataType.UINT.GLType, count);
       unbind();
    }
-   public void bind(){
+   private void bind(){
       vao.bind();
    }
-   public static void unbind(){
+   private static void unbind(){
       VertexArrays.unbind();
    }
    public void drawWithShader(Matrix4f modelViewMat, Matrix4f projMat, ShaderInstance shaderInstance) {
       shaderInstance.apply();
       UpdateShader(modelViewMat, projMat, shaderInstance);
       bind();
-      RenderSystem.drawElements(GL46.GL_TRIANGLES, vertexCount, DataType.UINT.GLType);
+      toDraw.internalBuffer.bind();
+      RenderSystem.drawElements(GL46.GL_TRIANGLES, toDraw.indexCount, DataType.UINT.GLType);
       unbind();
       shaderInstance.clear();
    }
    public void draw(Matrix4f modelViewMat, Matrix4f proj) {
-      drawWithShader(modelViewMat, proj, shader);
+      drawWithShader(modelViewMat, proj, RenderSystem.getShader());
    }
    public void draw(Matrix4f modelViewMat) {
       draw(modelViewMat, RenderSystem.getProjectionMatrix());

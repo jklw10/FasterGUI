@@ -11,11 +11,12 @@ import com.mojang.math.Matrix4f;
 import dev.tr7zw.fastergui.FasterGuiModBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 
 public class BufferRenderer {
 
     private static final Minecraft minecraft = Minecraft.getInstance();
-    private static Model model = DefaultModel.QUAD;
+    //private Model model = DefaultModel.getQuadModel();
     private RenderTarget guiTarget = new TextureTarget(100, 100, true, false);
     private long nextFrame = System.currentTimeMillis();
     private boolean isRendering = false;
@@ -86,7 +87,7 @@ public class BufferRenderer {
         Matrix4f proj = fullscreen.copy();
         fullscreen.multiply(Matrix4f.createScaleMatrix(2, 2, 0));
         fullscreen.multiply(Matrix4f.createTranslateMatrix(-1, -1, -0.01f));
-        model.draw(fullscreen, proj);
+        DefaultModel.getQuadModel().draw(fullscreen, proj);
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
