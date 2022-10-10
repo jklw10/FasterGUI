@@ -28,6 +28,7 @@ public class Model {
       //yeah uhh... mmm make the shader stuff better ?
       //lighting = new VertexAttributeBuffer(GL46.GL_STATIC_DRAW, 4, DataType.SHORT2,1);
 
+      this.shader = shader;
       componentContainer = container;
       bind();
       componentContainer.createEntity(components);
@@ -37,8 +38,9 @@ public class Model {
    }
    public Model(ShaderInstance shader, VertexDataFormat dataFormat, IComponent[] components){
       
-      bind();
+      this.shader = shader;
       componentContainer = new GPUEntityComponentContainer();
+      bind();
       componentContainer.createEntity(components);
       dataFormat.enable(componentContainer);
       toDraw = fromComponent(components[0]);

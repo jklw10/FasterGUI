@@ -29,6 +29,7 @@ public class GPUEntityComponentContainer {
             buf = establishType(component);
             return;
         }
+        //TODO if you get here you're fucked until expandable buffers
         buf.subData(id*component.getStride(),component.asBuffer());
     }
     public void setEntity(int id, IComponent[] entitydata)
@@ -49,6 +50,7 @@ public class GPUEntityComponentContainer {
     
     private GPUBuffer establishType(IComponent comp){
         var buf = new GPUBuffer(GL46.GL_ARRAY_BUFFER, GL46.GL_STATIC_DRAW);
+        buf.setData(comp.asBuffer());
         buffers.put(comp.getClass(),buf);
         return buf;
     }

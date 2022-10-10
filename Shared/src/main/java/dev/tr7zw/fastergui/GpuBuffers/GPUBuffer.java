@@ -31,6 +31,15 @@ public class GPUBuffer{
     {
         bind();
         GL46.glBufferData(bufferTarget, data, bufferUsageHint);
+        if(bufferTarget == GL46.GL_ELEMENT_ARRAY_BUFFER){
+            int[] array = new int[6];
+            GL46.glGetBufferSubData(bufferTarget, 0, array);
+            System.out.println(Arrays.toString(array));
+        }else{
+            var array = new float[6];
+            GL46.glGetBufferSubData(bufferTarget, 0, array);
+            System.out.println(Arrays.toString(array));
+        }
     }
     public void subData(int start, ByteBuffer data)
     {
@@ -40,13 +49,8 @@ public class GPUBuffer{
     public void bind() 
     {
         System.out.println("bound buffer target:"+bufferTarget);
-      
         GL46.glBindBuffer(bufferTarget, Handle);
-        if(bufferTarget == GL46.GL_ELEMENT_ARRAY_BUFFER){
-            int[] array = new int[6];
-            GL46.glGetBufferSubData(GL46.GL_ELEMENT_ARRAY_BUFFER, 0, array);
-            System.out.println(Arrays.toString(array));
-        }
+        
     }
     public void delete(){
         GL46.glDeleteBuffers(Handle);
