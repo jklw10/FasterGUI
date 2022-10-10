@@ -9,7 +9,7 @@ public class ElementBuffer {
     public int indexCount;
     
     public void setData(int[] indices){
-        internalBuffer.setData(indices); 
+        internalBuffer.setData(GPUBuffer.intToByteBuffer(indices)); 
         indexCount = indices.length;
     }
     public void setData(ByteBuffer indices, int count){

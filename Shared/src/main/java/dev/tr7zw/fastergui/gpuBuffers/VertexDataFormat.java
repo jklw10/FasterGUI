@@ -18,7 +18,7 @@ public class VertexDataFormat {
         @Override
         public ByteBuffer asBuffer() {
             var buf = BufferUtils.createByteBuffer(getStride());
-            buf.asIntBuffer().put(light).flip();
+            buf.putInt(light).flip();
             return buf;
         }
         @Override

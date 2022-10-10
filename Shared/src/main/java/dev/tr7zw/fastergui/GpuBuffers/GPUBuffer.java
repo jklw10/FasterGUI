@@ -21,12 +21,12 @@ public class GPUBuffer{
         bufferTarget = target;
         bufferUsageHint = hint;
     }
-    public void setData(int[] data)
-    {
-        bind();
-        var buf = BufferUtils.createIntBuffer(data.length).put(data).flip();
-        GL46.glBufferData(bufferTarget, buf, bufferUsageHint);
-    }
+   //public void setData(int[] data)
+   //{
+   //    bind();
+   //    var buf = BufferUtils.createIntBuffer(data.length).put(data).flip();
+   //    GL46.glBufferData(bufferTarget, buf, bufferUsageHint);
+   //}
     public void setData(ByteBuffer data)
     {
         bind();
@@ -36,7 +36,7 @@ public class GPUBuffer{
             GL46.glGetBufferSubData(bufferTarget, 0, array);
             System.out.println(Arrays.toString(array));
         }else{
-            var array = new float[6];
+            var array = new float[data.remaining()/DataType.FLOAT.Size];
             GL46.glGetBufferSubData(bufferTarget, 0, array);
             System.out.println(Arrays.toString(array));
         }
@@ -48,31 +48,31 @@ public class GPUBuffer{
     }
     public void bind() 
     {
-        System.out.println("bound buffer target:"+bufferTarget);
+        System.out.println("bound buffer target:"+bufferTarget+", handle:"+Handle);
         GL46.glBindBuffer(bufferTarget, Handle);
-        
     }
     public void delete(){
         GL46.glDeleteBuffers(Handle);
     }
-    public static FloatBuffer vecToFloatBuffer(Vector2f[] array){
-        FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*2);
-        for (var vec : array) {
-            floats.put(vec.x());
-            floats.put(vec.y()); 
-        }
-        return floats.flip();
-    }
-    public static FloatBuffer vecToFloatBuffer(Vector3f[] array){
-        FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*3);
-        for (var vec : array) {
-            floats.put(vec.x());
-            floats.put(vec.y()); 
-            floats.put(vec.z()); 
-        }
-        return floats.flip();
-    }
+    //public static FloatBuffer vecToFloatBuffer(Vector2f[] array){
+    //    FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*2);
+    //    for (var vec : array) {
+    //        floats.put(vec.x());
+    //        floats.put(vec.y()); 
+    //    }
+    //    return floats.flip();
+    //}
+    //public static FloatBuffer vecToFloatBuffer(Vector3f[] array){
+    //    FloatBuffer floats = BufferUtils.createFloatBuffer(array.length*3);
+    //    for (var vec : array) {
+    //        floats.put(vec.x());
+    //        floats.put(vec.y()); 
+    //        floats.put(vec.z()); 
+    //    }
+    //    return floats.flip();
+    //}
     public static ByteBuffer vecToByteBuffer(Vector3f[] array){
+        System.out.println("vec3 array:"+Arrays.toString(array));
         var dt = DataType.FLOAT3;
         ByteBuffer floats = byteBufferFromDataType(array.length,dt);
         for (var vec : array) {
@@ -83,6 +83,7 @@ public class GPUBuffer{
         return floats.flip();
     }
     public static ByteBuffer vecToByteBuffer(Vector2f[] array){
+        System.out.println("vec2 array:"+Arrays.toString(array));
         var dt = DataType.FLOAT2;
         ByteBuffer floats = byteBufferFromDataType(array.length,dt);
         for (var vec : array) {
@@ -94,7 +95,9 @@ public class GPUBuffer{
     public static ByteBuffer intToByteBuffer(int[] array){
         var dt = DataType.INT;
         ByteBuffer values = byteBufferFromDataType(array.length,dt);
-        values.asIntBuffer().put(array);
+        for (var value : array) {
+            values.putInt(value);
+        }
         return values.flip();
     }
     public static ByteBuffer byteBufferFromDataType(int length,DataType dt){

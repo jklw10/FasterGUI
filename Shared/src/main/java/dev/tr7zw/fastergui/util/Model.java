@@ -82,7 +82,6 @@ public class Model {
       shaderInstance.apply();
       UpdateShader(modelViewMat, projMat, shaderInstance);
       bind();
-      toDraw.internalBuffer.bind();
       RenderSystem.drawElements(GL46.GL_TRIANGLES, toDraw.indexCount, DataType.UINT.GLType);
       unbind();
       shaderInstance.clear();
